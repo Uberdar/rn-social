@@ -18,7 +18,7 @@ const initialState = {
   password: "",
 };
 
-export default function RegisterScreen() {
+export default function RegisterScreen({ navigation }) {
   const [isShownKeyboard, setIsShownKeyboard] = useState(false);
 
   const [isFocusedMail, setIsFocusedMail] = useState(false);
@@ -109,6 +109,7 @@ export default function RegisterScreen() {
                     <Text style={styles.submitBtnText}>Войти</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
+                    onPress={() => navigation.navigate("Register")}
                     activeOpacity={0.8}
                     style={styles.changeToAnotherPage}
                   >

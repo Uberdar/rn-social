@@ -19,7 +19,7 @@ const initialState = {
   nickname: "",
 };
 
-export default function RegisterScreen() {
+export default function RegisterScreen({ navigation }) {
   const [isShownKeyboard, setIsShownKeyboard] = useState(false);
 
   const [isFocusedLogin, setIsFocusedLogin] = useState(false);
@@ -132,6 +132,7 @@ export default function RegisterScreen() {
                     <Text style={styles.submitBtnText}>Зарегистироваться</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
+                    onPress={() => navigation.navigate("Login")}
                     activeOpacity={0.8}
                     style={styles.changeToAnotherPage}
                   >

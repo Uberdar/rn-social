@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "rn-social",
-    "slug": "rn-social",
+    "owner": "uberdar",
+    "slug": "firstproj",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
