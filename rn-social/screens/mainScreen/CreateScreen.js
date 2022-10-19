@@ -1,13 +1,40 @@
 import { useIsFocused } from "@react-navigation/native";
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  TextInput,
+} from "react-native";
+import { useSelector } from "react-redux";
 import { Camera } from "expo-camera";
 import * as Location from "expo-location";
+import db from "../../firebase/config";
 const CreateScreen = ({ navigation }) => {
   const [snap, setSnap] = useState("");
   const [photo, setPhoto] = useState(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const isFocused = useIsFocused();
+  const [comment, setComment] = useState();
+  const [location, setLocation] = useState(null);
+
+  const { userId, nickname } = useSelector((state) => state.auth);
+  console.log("userId: ", userId);
+  console.log("nickname: ", nickname);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+      }
+
+      let locationRes = await Location.getCurrentPositionAsync({});
+      setLocation(locationRes);
+    })();
+  }, []);
 
   const takePhoto = async () => {
     try {
@@ -22,22 +49,43 @@ const CreateScreen = ({ navigation }) => {
       }
       const takenPhoto = await snap.takePictureAsync();
 
-      const location = await Location.getCurrentPositionAsync();
       setPhoto(takenPhoto.uri);
 
-      console.log("latitude", location.coords.latitude);
-      console.log("longitude", location.coords.longitude);
-      console.log("takenPhoto: ", takenPhoto);
+      // console.log("latitude", location.coords.latitude);
+      // console.log("longitude", location.coords.longitude);
+      // console.log("takenPhoto: ", takenPhoto);
     } catch (error) {
       console.log("error: ", error);
     }
   };
   const sendPhoto = () => {
-    navigation.navigate("DefaultScreen", { photo });
+    uploadPostToServer();
+    navigation.navigate("DefaultScreen");
+  };
+
+  const uploadPostToServer = async () => {
+    const photo = await uploadPhotoToServer();
+    const createPost = await db
+      .firestore()
+      .collection("posts")
+      .add({ photo, comment, location: location.coords, userId, nickname });
   };
 
   const onCameraReady = () => {
     setIsCameraReady(true);
+  };
+
+  const uploadPhotoToServer = async () => {
+    const response = await fetch(photo);
+    const file = await response.blob();
+    const uniquePostId = Date.now().toString();
+    const data = await db.storage().ref(`postImage/${uniquePostId}`).put(file);
+    const processedPhoto = await db
+      .storage()
+      .ref("postImage")
+      .child(uniquePostId)
+      .getDownloadURL();
+    return processedPhoto;
   };
 
   return (
@@ -61,7 +109,9 @@ const CreateScreen = ({ navigation }) => {
           </TouchableOpacity>
         </Camera>
       )}
-
+      <View style={styles.inputPhotoContainer}>
+        <TextInput style={styles.inputPhotoText} onChangeText={setComment} />
+      </View>
       <View>
         <TouchableOpacity onPress={sendPhoto} style={styles.sendBtn}>
           <Text style={styles.sendLabel}>SEND</Text>
@@ -113,6 +163,13 @@ const styles = StyleSheet.create({
   sendLabel: {
     color: "#20b2aa",
     fontSize: 20,
+  },
+  inputPhotoContainer: { marginHorizontal: 10 },
+  inputPhotoText: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: "#fff",
+    borderBottomColor: "#20b2aa",
   },
 });
 

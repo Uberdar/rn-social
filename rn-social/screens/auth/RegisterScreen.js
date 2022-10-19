@@ -13,6 +13,10 @@ import {
   Dimensions,
 } from "react-native";
 
+import { useDispatch } from "react-redux";
+
+import { authSignUpUser } from "../../redux/auth/authOperations";
+
 const initialState = {
   email: "",
   password: "",
@@ -21,7 +25,7 @@ const initialState = {
 
 export default function RegisterScreen({ navigation }) {
   const [isShownKeyboard, setIsShownKeyboard] = useState(false);
-
+  const dispatch = useDispatch();
   const [isFocusedLogin, setIsFocusedLogin] = useState(false);
   const [isFocusedMail, setIsFocusedMail] = useState(false);
   const [isFocusedPassword, setIsFocusedPassword] = useState(false);
@@ -126,6 +130,7 @@ export default function RegisterScreen({ navigation }) {
                     onPress={() => {
                       hideKeyboard();
                       console.log(state);
+                      dispatch(authSignUpUser(state));
                       setState(initialState);
                     }}
                   >
